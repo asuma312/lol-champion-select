@@ -2,7 +2,7 @@
     <div class="relative">
         <div class="w-full flex flex-col justify-center">
             <img
-                class="z-10 aspect-square self-center"
+                class="z-10 aspect-square self-center object-cover"
                 :class="[
                     {
                         grayscale: props.disabled || selected,
@@ -13,10 +13,12 @@
                     },
                     clickable && props.phase && `cursor-pointer hover-effects${props.phase}`,
                 ]"
+                :style="props.banned ? 'filter: grayscale(100%)' : ''"
                 :key="champion?.name"
                 :src="champion?.image"
                 :alt="champion?.name"
                 :width="imageSize"
+                :height="imageSize"
                 @error="onIconError"
             />
             <p class="text-sm text-center" v-if="!hideName">{{ champion?.name }}</p>
@@ -35,6 +37,12 @@
                 v-if="selected && phase == 'ban'"
                 class="z-50 cursor-pointer absolute top-0 left-1/2 -translate-x-1/2"
                 :color="'#b91c1c'"
+            />
+            <BanIcon
+                :width="imageSize"
+                v-if="props.banned"
+                class="z-50 absolute top-0 left-1/2 -translate-x-1/2"
+                color="#6b7280"
             />
         </div>
     </div>
@@ -64,6 +72,10 @@ const props = defineProps({
         default: false,
     },
     disabled: {
+        type: Boolean,
+        default: false,
+    },
+    banned: {
         type: Boolean,
         default: false,
     },

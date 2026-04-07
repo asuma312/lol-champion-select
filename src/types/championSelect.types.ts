@@ -13,6 +13,22 @@ export type BanChampion = {
     champ: string
 }
 
+export type PickChampion = {
+    side: Side
+    champ: string
+}
+
+export type SessionData = {
+    bans: {
+        blue: string[]
+        red: string[]
+    }
+    picks: {
+        blue: string[]
+        red: string[]
+    }
+}
+
 export type ChampionPortrait = {
     name: string,
     image: string,
@@ -30,3 +46,8 @@ export type TeamPicks = {
 }
 
 export type Status = 'BANBLUE' | 'BANRED' | 'PICKBLUE' | 'PICKRED'
+
+export type DraftStep = {
+    phase: Phase
+    side: Side
+}

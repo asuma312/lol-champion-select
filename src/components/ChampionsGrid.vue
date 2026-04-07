@@ -7,7 +7,8 @@
                     :key="c.name"
                     :phase="phase"
                     :selected="c.id == hoveredChampion"
-                    :disabled="isChampBanned(c.id)"
+                    :disabled="isUnavailable(c.id)"
+                    :banned="bannedChampions.some(b => b.toLowerCase() === c.id.toLowerCase())"
                     :champion="{
                         name: c.name,
                         image: `/champions/${c.id}.png`,
@@ -19,12 +20,12 @@
     </div>
     <div class="mt-10 mb-5">
         <button
-            @click="banChampion"
+            @click="confirmChampion"
             class="text-white font-bold py-2 px-4 rounded"
             :class="hoveredChampion ? 'bg-blue-500 hover:bg-blue-700' : ' bg-gray-500'"
             :disabled="!hoveredChampion"
         >
-            Ban champion
+            {{ phase === 'ban' ? 'Ban Champion' : 'Lock In' }}
         </button>
     </div>
 </template>
@@ -35,16 +36,17 @@ import { PropType } from "vue"
 
 import ChampionsPortrait from "./ChampionPortrait.vue"
 
-const emit = defineEmits(["bannedChamp", "update:hoveredChampion"])
+const emit = defineEmits(["confirmedChamp", "update:hoveredChampion"])
 const props = defineProps({
     champions: Array as PropType<SingleChampion[]>,
+    unavailableChampions: { type: Array as PropType<string[]>, required: true },
     bannedChampions: { type: Array as PropType<string[]>, required: true },
     phase: String as PropType<Phase>,
     hoveredChampion: { type: String, default: "" },
 })
 
 const clickChampion = (champId: string): void => {
-    if (isChampBanned(champId)) {
+    if (isUnavailable(champId)) {
         return
     }
     emit("update:hoveredChampion", champId)
@@ -52,15 +54,12 @@ const clickChampion = (champId: string): void => {
 
 //TODO: Fix name/id confusion around types
 
-const isChampBanned = (name: string): boolean => {
-    return props.bannedChampions.some(b => b.toLowerCase() === name.toLowerCase())
+const isUnavailable = (name: string): boolean => {
+    return props.unavailableChampions.some(b => b.toLowerCase() === name.toLowerCase())
 }
 
-const banChampion = () => {
-    emit("bannedChamp", {
-        side: "blue",
-        champ: props.hoveredChampion,
-    })
+const confirmChampion = () => {
+    emit("confirmedChamp", props.hoveredChampion)
     emit("update:hoveredChampion", "")
 }
 </script>

@@ -5,7 +5,7 @@
             <div class="flex" :class="{ 'flex-row-reverse': position == 'right' }">
                 <template v-if="champions && champions[i - 1]">
                     <div>
-                        <ChampionsPortrait hideName rounded :value="champions[i - 1]" :side="side" />
+                        <ChampionsPortrait hideName rounded :champion="champions[i - 1]" :side="side" />
                     </div>
                     <div class="self-center">
                         <p class="font-bold">
