@@ -1,28 +1,25 @@
 import { defineStore } from "pinia";
 
-import { Champions, DraftStep, SessionData, Side, SingleChampion } from "@/types/championSelect.types"
+import { Champions, DraftStep, SessionData, SingleChampion } from "@/types/championSelect.types"
+import { CHAMPION_POSITIONS } from "@/data/championPositions"
 
 const DRAFT_ORDER: DraftStep[] = [
-    // Phase 1 Bans (3 per team, alternating)
     { phase: 'ban', side: 'blue' },
     { phase: 'ban', side: 'red' },
     { phase: 'ban', side: 'blue' },
     { phase: 'ban', side: 'red' },
     { phase: 'ban', side: 'blue' },
     { phase: 'ban', side: 'red' },
-    // Phase 1 Picks (B1, R1-2, B2-3, R3)
     { phase: 'pick', side: 'blue' },
     { phase: 'pick', side: 'red' },
     { phase: 'pick', side: 'red' },
     { phase: 'pick', side: 'blue' },
     { phase: 'pick', side: 'blue' },
     { phase: 'pick', side: 'red' },
-    // Phase 2 Bans (2 per team, red starts)
     { phase: 'ban', side: 'red' },
     { phase: 'ban', side: 'blue' },
     { phase: 'ban', side: 'red' },
     { phase: 'ban', side: 'blue' },
-    // Phase 2 Picks (R4, B4-5, R5)
     { phase: 'pick', side: 'red' },
     { phase: 'pick', side: 'blue' },
     { phase: 'pick', side: 'blue' },
@@ -33,6 +30,7 @@ export const useChampions = defineStore({
     id: "useChampions",
     state: () => ({
         queryFilter: "",
+        roleFilter: "all",
         champions: [] as SingleChampion[],
         bans: {
             red: [] as Champions,
@@ -46,7 +44,15 @@ export const useChampions = defineStore({
     }),
     getters: {
         filteredChampions(): SingleChampion[] {
-            return this.queryFilter ? this.champions.filter((c: SingleChampion) => c.name.toLowerCase().includes(this.queryFilter.toLowerCase())) : this.champions
+            let list = this.champions
+            if (this.roleFilter !== "all") {
+                const role = this.roleFilter.charAt(0).toUpperCase() + this.roleFilter.slice(1)
+                list = list.filter((c) => (CHAMPION_POSITIONS[c.name] ?? []).some((p) => p.toLowerCase() === role.toLowerCase()))
+            }
+            if (this.queryFilter) {
+                list = list.filter((c) => c.name.toLowerCase().includes(this.queryFilter.toLowerCase()))
+            }
+            return list
         },
         sessionData(): SessionData {
             return {
@@ -82,7 +88,7 @@ export const useChampions = defineStore({
                 .then((res) => res.json())
                 .then((response) => {
                     const championsData = Object.values(response.data) as SingleChampion[]
-                    this.champions = championsData.map((val: SingleChampion) => ({ name: val.name, id: val.id })) as []
+                    this.champions = championsData.map((val: SingleChampion) => ({ name: val.name, id: val.id, tags: val.tags ?? [] })) as []
                 })
                 .catch(err => {
                     console.error(err);
@@ -90,6 +96,9 @@ export const useChampions = defineStore({
         },
         setFilter(filter: string): void {
             this.queryFilter = filter
+        },
+        setRoleFilter(role: string): void {
+            this.roleFilter = role
         },
         confirmChampion(champ: string): void {
             const step = DRAFT_ORDER[this.draftStep]

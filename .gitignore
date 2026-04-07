@@ -3,6 +3,8 @@ node_modules
 help
 /dist
 /public/champions
+CLAUDE.md
+package-lock.json
 
 
 # local env files
@@ -23,3 +25,4 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+/.playwright-mcp

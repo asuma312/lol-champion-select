@@ -8,14 +8,13 @@
 <script lang="ts" setup>
 import { PropType } from "vue"
 import { Side } from "@/types/championSelect.types"
+
 defineProps({
-    rhombusVisible: {
-        type: Boolean,
-        default: false,
-    },
+    rhombusVisible: { type: Boolean, default: false },
     side: String as PropType<Side>,
 })
 </script>
+
 <style lang="scss" scoped>
 .rhombus {
     @apply border border-yellow-200 rotate-45;

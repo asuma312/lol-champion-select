@@ -1,19 +1,12 @@
 <template>
-    <div class="relative">
-        <div class="w-full flex flex-col justify-center">
+    <div class="portrait" :class="[portraitClass, { 'portrait--clickable': clickable }]">
+        <div class="portrait__frame">
             <img
-                class="z-10 aspect-square self-center object-cover"
-                :class="[
-                    {
-                        grayscale: props.disabled || selected,
-                        'rounded-full': props.rounded,
-                        'border-2 border-yellow-400': side == 'blue',
-                        'border-2 border-red-700': side == 'red',
-                        'border border-red-700': props.phase == 'ban',
-                    },
-                    clickable && props.phase && `cursor-pointer hover-effects${props.phase}`,
-                ]"
-                :style="props.banned ? 'filter: grayscale(100%)' : ''"
+                class="portrait__img"
+                :class="{
+                    'portrait__img--grayscale': props.disabled || selected || props.banned,
+                    'portrait__img--banned': props.banned,
+                }"
                 :key="champion?.name"
                 :src="champion?.image"
                 :alt="champion?.name"
@@ -21,30 +14,33 @@
                 :height="imageSize"
                 @error="onIconError"
             />
-            <p class="text-sm text-center" v-if="!hideName">{{ champion?.name }}</p>
-            <div
-                v-if="selected && phase == 'pick'"
-                class="z-50 absolute top-0 left-1/2 -translate-x-1/2 cursor-pointer rounded-full border-2 border-yellow-400 overlay aspect-square"
-            />
+
+            <div v-if="selected && phase == 'pick'" class="portrait__ring portrait__ring--pick" />
+            <div v-if="selected && phase == 'ban'" class="portrait__ring portrait__ring--ban" />
+
             <HoverIcon
                 :width="imageSize"
                 v-if="selected"
-                class="z-50 cursor-pointer absolute top-0 left-1/2 -translate-x-1/2"
-                :color="phase == 'ban' ? '#b91c1c' : '#fbbf24'"
+                class="portrait__hover-icon"
+                :color="phase == 'ban' ? '#b91c1c' : '#c8aa6e'"
             />
+
+            <div v-if="props.banned" class="portrait__ban-overlay">
+                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,80,80,0.9)" class="portrait__ban-x">
+                    <line x1="5" y1="5" x2="19" y2="19" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="19" y1="5" x2="5" y2="19" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+
             <BanIcon
                 :width="imageSize"
                 v-if="selected && phase == 'ban'"
-                class="z-50 cursor-pointer absolute top-0 left-1/2 -translate-x-1/2"
+                class="portrait__hover-icon"
                 :color="'#b91c1c'"
             />
-            <BanIcon
-                :width="imageSize"
-                v-if="props.banned"
-                class="z-50 absolute top-0 left-1/2 -translate-x-1/2"
-                color="#6b7280"
-            />
         </div>
+
+        <p class="portrait__name" v-if="!hideName">{{ champion?.name }}</p>
     </div>
 </template>
 
@@ -59,50 +55,138 @@ import BanIcon from "./icons/BanIcon.vue"
 
 const props = defineProps({
     champion: Object as PropType<ChampionPortrait>,
-    clickable: {
-        type: Boolean,
-        default: false,
-    },
-    rounded: {
-        type: Boolean,
-        default: false,
-    },
-    hideName: {
-        type: Boolean,
-        default: false,
-    },
-    disabled: {
-        type: Boolean,
-        default: false,
-    },
-    banned: {
-        type: Boolean,
-        default: false,
-    },
-    selected: {
-        type: Boolean,
-        default: false,
-    },
+    clickable: { type: Boolean, default: false },
+    rounded: { type: Boolean, default: false },
+    hideName: { type: Boolean, default: false },
+    disabled: { type: Boolean, default: false },
+    banned: { type: Boolean, default: false },
+    selected: { type: Boolean, default: false },
     side: String as PropType<Side>,
     phase: String as PropType<Phase>,
 })
 
-//TODO: find a way to handle portrait and overlays size better
 const imageSize = 80
-const imageSizePx = computed(() => `${imageSize}px`)
+
+const portraitClass = computed(() => {
+    const classes: string[] = []
+    if (props.selected) classes.push(props.phase === "ban" ? "portrait--selected-ban" : "portrait--selected-pick")
+    if (props.rounded) classes.push("portrait--rounded")
+    return classes
+})
 </script>
 
 <style lang="scss" scoped>
-.grayscale {
-    filter: grayscale(100%);
+.portrait {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+
+    &--clickable {
+        cursor: pointer;
+
+        &:hover .portrait__frame {
+            border-color: rgba(200, 168, 78, 0.45);
+            box-shadow: 0 0 8px rgba(200, 168, 78, 0.15);
+        }
+    }
+
+    &--selected-pick .portrait__frame {
+        border-color: #c8aa6e !important;
+        box-shadow: 0 0 14px rgba(200, 168, 78, 0.5), inset 0 0 8px rgba(200, 168, 78, 0.1) !important;
+    }
+
+    &--selected-ban .portrait__frame {
+        border-color: #b91c1c !important;
+        box-shadow: 0 0 14px rgba(185, 28, 28, 0.5) !important;
+    }
+
+    &--rounded .portrait__frame {
+        border-radius: 50%;
+        overflow: hidden;
+        clip-path: none !important;
+    }
 }
-.overlay {
-    width: v-bind(imageSizePx);
+
+.portrait__frame {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border: 1px solid rgba(91, 90, 86, 0.4);
+    overflow: hidden;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    clip-path: polygon(
+        6px 0%, calc(100% - 6px) 0%,
+        100% 6px, 100% calc(100% - 6px),
+        calc(100% - 6px) 100%, 6px 100%,
+        0% calc(100% - 6px), 0% 6px
+    );
 }
-.hover-effects-pick:hover {
-    @apply border-2 border-yellow-400;
+
+.portrait__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: filter 0.2s;
+
+    &--grayscale {
+        filter: grayscale(80%) brightness(0.7);
+    }
+
+    &--banned {
+        filter: grayscale(100%) brightness(0.45) !important;
+    }
 }
-.hover-effects-ban:hover {
-    @apply border-2 border-red-700;
+
+.portrait__ring {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    &--pick {
+        box-shadow: inset 0 0 0 2px #c8aa6e;
+    }
+
+    &--ban {
+        box-shadow: inset 0 0 0 2px #b91c1c;
+    }
+}
+
+.portrait__hover-icon {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    cursor: pointer;
+}
+
+.portrait__ban-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(100, 10, 10, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.portrait__ban-x {
+    width: 28px;
+    height: 28px;
+}
+
+.portrait__name {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: #a09b8c;
+    text-align: center;
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
 }
 </style>
