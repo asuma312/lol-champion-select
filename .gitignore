@@ -2,6 +2,7 @@
 node_modules
 help
 /dist
+/public/champions
 
 
 # local env files

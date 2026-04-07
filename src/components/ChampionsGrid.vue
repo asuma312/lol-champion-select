@@ -10,7 +10,7 @@
                     :disabled="isChampBanned(c.id)"
                     :champion="{
                         name: c.name,
-                        image: `https://fastcdn.mobalytics.gg/assets/lol/images/dd/champions/icons/${c.id.toLowerCase()}.png`,
+                        image: `/champions/${c.id}.png`,
                     }"
                     @click="clickChampion(c.id)"
                 />
@@ -53,13 +53,13 @@ const clickChampion = (champId: string): void => {
 //TODO: Fix name/id confusion around types
 
 const isChampBanned = (name: string): boolean => {
-    return props.bannedChampions.includes(name.toLowerCase())
+    return props.bannedChampions.some(b => b.toLowerCase() === name.toLowerCase())
 }
 
 const banChampion = () => {
     emit("bannedChamp", {
         side: "blue",
-        champ: props.hoveredChampion.toLowerCase(),
+        champ: props.hoveredChampion,
     })
     emit("update:hoveredChampion", "")
 }

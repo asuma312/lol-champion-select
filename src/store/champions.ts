@@ -38,7 +38,7 @@ export const useChampions = defineStore({
 
         banChampion(side: Side, champ: string): void {
             if (this.bans[side].length < 5) {
-                this.bans[side].push({ name: champ, image: `https://fastcdn.mobalytics.gg/assets/lol/images/dd/champions/icons/${champ}.png` })
+                this.bans[side].push({ name: champ, image: `/champions/${champ}.png` })
             }
         }
 

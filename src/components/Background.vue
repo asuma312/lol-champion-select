@@ -3,6 +3,7 @@
         <img
             class="absolute w-full h-full image"
             :src="champion && phase == 'pick' ? championStyle : 'https://i.imgur.com/2Qyocz8.png'"
+            @error="onSplashError"
         />
         <!-- <img
       v-else
@@ -24,6 +25,7 @@
 <script lang="ts" setup>
 import { Phase } from "@/types/championSelect.types"
 import { computed, PropType } from "vue"
+import { onSplashError } from "@/utils/championImages"
 
 const props = defineProps({
     champion: String,
@@ -32,8 +34,7 @@ const props = defineProps({
 
 //TODO: find a better way to handle champion background
 const championStyle = computed(
-    () =>
-        `https://fastcdn.mobalytics.gg/assets/lol/images/dd/champions/backgrounds/${props.champion?.toLowerCase()}.jpg`,
+    () => `/champions/splash/${props.champion}_0.jpg`,
 )
 </script>
 <style lang="scss">

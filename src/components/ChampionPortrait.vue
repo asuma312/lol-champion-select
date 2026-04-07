@@ -17,6 +17,7 @@
                 :src="champion?.image"
                 :alt="champion?.name"
                 :width="imageSize"
+                @error="onIconError"
             />
             <p class="text-sm text-center" v-if="!hideName">{{ champion?.name }}</p>
             <div
@@ -43,6 +44,7 @@
 import { computed, PropType } from "vue"
 
 import { ChampionPortrait, Phase, Side } from "@/types/championSelect.types"
+import { onIconError } from "@/utils/championImages"
 
 import HoverIcon from "./icons/HoverIcon.vue"
 import BanIcon from "./icons/BanIcon.vue"
